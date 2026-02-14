@@ -1,0 +1,163 @@
+{% load static %}
+
+<html>
+<head>
+    <title>Slide Puzzle</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f4f4f4;
+            flex-direction: column;
+        }
+        #puzzle {
+            width: 400px;
+            height: 400px;
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+        }
+
+        .tile {
+            width: 100px;
+            height: 100px;
+            background-image: url("{% static 'puzzle/image.png' %}");
+            background-size: 400px 400px;
+        }
+
+
+        .empty {
+            background: none;
+            cursor: default;
+        }
+
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Hi eve! This is my little gift that I prepared for you &lt;3</h2>
+<h2>Please don't be lazy and complete the puzzle</h2>
+<div id="puzzle"></div>
+
+<script>
+const puzzle = document.getElementById("puzzle");
+let tiles = [];
+
+function createPuzzle() {
+    tiles = [];
+
+    for (let i = 0; i < 16; i++) {
+        const tile = document.createElement("div");
+        tile.classList.add("tile");
+
+        tile.dataset.correct = i;   // ⭐ store correct position
+
+        if (i === 15) {
+            tile.classList.add("empty");
+        } else {
+            const x = (i % 4) * -100;
+            const y = Math.floor(i / 4) * -100;
+            tile.style.backgroundPosition = `${x}px ${y}px`;
+        }
+
+        tiles.push(tile);
+    }
+
+    shuffle();
+    render();
+}
+
+
+function render() {
+    puzzle.innerHTML = "";
+
+    tiles.forEach((tile, index) => {
+        tile.onclick = () => moveTile(index);
+        puzzle.appendChild(tile);
+    });
+}
+
+function moveTile(index) {
+    const emptyIndex = tiles.findIndex(t => t.classList.contains("empty"));
+
+    const row = Math.floor(index / 4);
+    const col = index % 4;
+
+    const emptyRow = Math.floor(emptyIndex / 4);
+    const emptyCol = emptyIndex % 4;
+
+    const isAdjacent =
+        (row === emptyRow && Math.abs(col - emptyCol) === 1) ||
+        (col === emptyCol && Math.abs(row - emptyRow) === 1);
+
+    if (isAdjacent) {
+        [tiles[index], tiles[emptyIndex]] =
+            [tiles[emptyIndex], tiles[index]];
+
+        render();
+        if (isSolved()) {
+            finishGame();
+        }
+
+    }
+}
+
+function shuffle() {
+    for (let i = 0; i < 300; i++) {
+        const emptyIndex = tiles.findIndex(t => t.classList.contains("empty"));
+
+        const row = Math.floor(emptyIndex / 4);
+        const col = emptyIndex % 4;
+
+        const possibleMoves = [];
+
+        if (col > 0) possibleMoves.push(emptyIndex - 1);
+        if (col < 3) possibleMoves.push(emptyIndex + 1);
+        if (row > 0) possibleMoves.push(emptyIndex - 4);
+        if (row < 3) possibleMoves.push(emptyIndex + 4);
+
+        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+
+        [tiles[randomMove], tiles[emptyIndex]] =
+            [tiles[emptyIndex], tiles[randomMove]];
+    }
+}
+
+function isSolved() {
+    for (let i = 0; i < tiles.length; i++) {
+        if (parseInt(tiles[i].dataset.correct) !== i) {
+            return false;
+        }
+    }
+    return true;
+}
+function finishGame() {
+    // Remove empty tile class
+    tiles[15].classList.remove("empty");
+
+    // Set correct background for last tile
+    const x = (15 % 4) * -100;
+    const y = Math.floor(15 / 4) * -100;
+    tiles[15].style.backgroundPosition = `${x}px ${y}px`;
+
+    render();
+
+    const message = document.createElement("h3");
+    message.innerText = "🎉 You solved it!";
+    message.innerText = "Happy Valentine’s day I love and miss you immeasurably❤️❤️❤️❤️❤️";
+    message.style.marginTop = "20px";
+    document.body.appendChild(message);
+}
+
+
+createPuzzle();
+
+</script>
+
+</body>
+</html>
