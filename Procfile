@@ -1,1 +1,2 @@
-web: gunicorn puzzle_site.wsgi
+web: gunicorn puzzle_site.wsgi --bind 0.0.0.0:$PORT
+
